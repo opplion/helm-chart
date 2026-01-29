@@ -1,0 +1,6 @@
+apiVersion: v2
+name: my-simple-app
+description: A minimal Helm chart for beginners
+type: application
+version: 0.1.0       # Chart 的版本
+appVersion: "1.0.0"  # 你的应用的版本
