@@ -1,0 +1,81 @@
+# 默认镜像：Sonatype 官方 Nexus 3 OSS
+image:
+  repository: sonatype/nexus3
+  tag: "3.70.1"
+  pullPolicy: IfNotPresent
+
+# Nexus OSS 建议为 1；RWO 卷多副本无法共享同一块盘
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 200
+
+securityContext:
+  runAsUser: 200
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+# Nexus Web UI / API
+service:
+  type: ClusterIP
+  port: 8081
+  annotations: {}
+
+resources:
+  limits:
+    cpu: "4"
+    memory: 4Gi
+  requests:
+    cpu: "500m"
+    memory: 2Gi
+
+# JVM / Nexus 堆内存，需小于 resources.limits.memory
+env:
+  INSTALL4J_ADD_VM_PARAMS: "-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m"
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 50Gi
+  annotations: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# 首次启动较慢，探测时间偏长
+startupProbe:
+  httpGet:
+    path: /
+    port: 8081
+  failureThreshold: 60
+  periodSeconds: 10
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8081
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8081
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 10

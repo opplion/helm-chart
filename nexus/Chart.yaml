@@ -1,0 +1,12 @@
+apiVersion: v2
+name: nexus
+description: Sonatype Nexus Repository OSS 3（Maven/Docker/npm 等制品库）
+type: application
+version: 0.1.0
+appVersion: "3.70.1"
+keywords:
+  - nexus
+  - repository
+  - docker-registry
+maintainers:
+  - name: chart-user

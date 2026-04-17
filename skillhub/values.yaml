@@ -1,0 +1,99 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+config:
+  redisHost: redis
+  redisPort: "6379"
+  storageBasePath: /var/lib/skillhub/storage
+  skillScannerEnabled: "true"
+  skillScannerUrl: http://skillhub-scanner:8000
+  skillScannerMode: upload
+
+storage:
+  pvc:
+    enabled: true
+    name: skillhub-storage-pvc
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+
+server:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/iflytek/skillhub-server
+    tag: edge
+  service:
+    port: 8080
+  env:
+    springProfilesActive: docker
+    sessionCookieSecure: "true"
+  secretRef:
+    name: skillhub-secret
+    keys:
+      datasourceUrl: spring-datasource-url
+      datasourceUsername: spring-datasource-username
+      datasourcePassword: spring-datasource-password
+      githubClientId: oauth2-github-client-id
+      githubClientSecret: oauth2-github-client-secret
+  probes:
+    readiness:
+      path: /actuator/health/readiness
+      initialDelaySeconds: 20
+      periodSeconds: 10
+    liveness:
+      path: /actuator/health/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 15
+
+web:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/iflytek/skillhub-web
+    tag: edge
+  service:
+    port: 80
+  probes:
+    readiness:
+      path: /nginx-health
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    liveness:
+      path: /nginx-health
+      initialDelaySeconds: 10
+      periodSeconds: 15
+
+scanner:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/iflytek/skillhub-scanner
+    tag: edge
+  service:
+    port: 8000
+  secretRef:
+    name: skillhub-secret
+    keys:
+      llmApiKey: skill-scanner-llm-api-key
+      llmModel: skill-scanner-llm-model
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    liveness:
+      path: /health
+      initialDelaySeconds: 20
+      periodSeconds: 15
+
+ingress:
+  enabled: true
+  className: nginx
+  host: skills.example.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~ ^/(oauth2/authorization|login/oauth2/code|api/v1/auth|api/v1/search|api/v1/skills/.*/download|api/v1/namespaces) {
+        limit_req zone=default burst=30 nodelay;
+      }

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # 使用 Release 名称作为应用名，避免冲突
   name: {{ .Release.Name }}
   labels:
-    app: {{ .Release.Name }}
+    blog: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      blog: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        blog: {{ .Release.Name }}
     spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.imagePullSecrets }}
       containers:
-        - name: main-app
-          # 拼接镜像地址
+        - name: blog
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

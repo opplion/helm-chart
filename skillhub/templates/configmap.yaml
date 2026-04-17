@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skillhub-config
+data:
+  redis-host: {{ .Values.config.redisHost | quote }}
+  redis-port: {{ .Values.config.redisPort | quote }}
+  storage-base-path: {{ .Values.config.storageBasePath | quote }}
+  skill-scanner-enabled: {{ .Values.config.skillScannerEnabled | quote }}
+  skill-scanner-url: {{ .Values.config.skillScannerUrl | quote }}
+  skill-scanner-mode: {{ .Values.config.skillScannerMode | quote }}

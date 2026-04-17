@@ -9,8 +9,9 @@ spec:
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
       protocol: TCP
       name: http
   selector:
     # 这里的 selector 必须和 Deployment 的 label 一致
-    app: {{ .Release.Name }}
+    blog: {{ .Release.Name }}
